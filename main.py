@@ -116,6 +116,7 @@ def export_products_csv(
     sort_by: int = Query(0),
     session: Session = Depends(get_session)
 ):
+    cursor = None
     try:
         # 1. LẤY RAW CONNECTION TỪ SESSION (Theo cách của bạn)
         # Ép kiểu .connection (lần 2) để lấy cái lõi mysql-connector ra
