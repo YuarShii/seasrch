@@ -5,7 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, text
 from database import get_session
 from models import SanPhamResponse
-
+import csv
+import io
+from fastapi.responses import StreamingResponse
 app = FastAPI()
 
 # ====================== CẤU HÌNH CORS (BẮT BUỘC CHO FRONTEND) ======================
@@ -102,3 +104,64 @@ def tim_kiem_san_pham(
     except Exception as e:
         print(f"--> [LỖI PYTHON]: {e}")
         return []
+    
+@app.get("/api/products/export")
+def export_products_csv(
+    # Nhận tham số lọc từ URL (giống hệt API tìm kiếm)
+    keyword: str = Query(None),
+    min_price: float = Query(None),
+    max_price: float = Query(None),
+    category: str = Query(None),
+    min_rating: float = Query(None),
+    sort_by: int = Query(0),
+    session: Session = Depends(get_session)
+):
+    try:
+        # 1. LẤY RAW CONNECTION TỪ SESSION (Theo cách của bạn)
+        # Ép kiểu .connection (lần 2) để lấy cái lõi mysql-connector ra
+        raw_connection = session.connection().connection
+        
+        # 2. TẠO CURSOR
+        # LƯU Ý: Để dictionary=False (mặc định) để nó trả về Tuple
+        # Tuple viết vào CSV dễ hơn Dictionary
+        cursor = raw_connection.cursor(dictionary=False)
+
+        # 2. GỌI PROCEDURE
+        # Lấy số lượng cực lớn (100,000 dòng) để đảm bảo lấy hết dữ liệu
+        args = [keyword, min_price, max_price, category, min_rating, sort_by, 1, 100000]
+        cursor.callproc('sp_TimKiemSanPhamNangCao', args)
+
+        # Lấy dữ liệu trả về
+        stored_results = [r.fetchall() for r in cursor.stored_results()]
+        rows = stored_results[0] if stored_results else []
+
+        # 3. VIẾT RA FILE CSV (Trong bộ nhớ RAM)
+        stream = io.StringIO()
+        csv_writer = csv.writer(stream)
+
+        # Ghi tiêu đề cột (Header)
+        headers = ['Mã SP', 'Tên Sản Phẩm', 'Giá Bán', 'Số Lượng', 'Giảm Giá', 'Danh Mục', 'Cửa Hàng', 'Điểm TB', 'Số Đánh Giá']
+        csv_writer.writerow(headers)
+
+        # Ghi dữ liệu
+        csv_writer.writerows(rows)
+
+        # 4. TRẢ VỀ FILE CHO NGƯỜI DÙNG TẢI
+        # Thêm BOM (u'\ufeff') để Excel hiển thị tiếng Việt không bị lỗi font
+        response_content = io.BytesIO((u'\ufeff' + stream.getvalue()).encode('utf-8'))
+
+        return StreamingResponse(
+            response_content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename=danh_sach_san_pham.csv",
+                "Content-Type": "text/csv; charset=utf-8"
+            }
+        )
+
+    except Exception as e:
+        print(f"Lỗi xuất CSV: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Luôn đóng kết nối dù có lỗi hay không
+        if 'cursor' in locals() and cursor: cursor.close()
