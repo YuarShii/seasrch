@@ -1,0 +1,234 @@
+/* --- 1. BIẾN MÀU SẮC SHOPEE --- */
+:root {
+  --primary-orange: #ee4d2d;
+  --primary-hover: #d73211;
+  --text-main: #333;
+  --text-grey: #555;
+  --bg-body: #f6f6f6;
+  --sidebar-width: 230px;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* --- 2. HEADER --- */
+.shopee-header {
+  height: 56px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 500;
+}
+.header-brand i {
+  color: var(--primary-orange);
+  font-size: 24px;
+}
+.header-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+/* --- 3. CONTAINER & SIDEBAR --- */
+.app-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: white;
+  overflow-y: auto;
+  border-right: 1px solid #e5e5e5;
+  padding-top: 10px;
+}
+
+.menu-group-label {
+  padding: 15px 20px 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  text-transform: uppercase;
+}
+
+.menu-item {
+  padding: 10px 20px 10px 45px;
+  font-size: 14px;
+  color: var(--text-grey);
+  cursor: pointer;
+  position: relative;
+  transition: 0.2s;
+}
+.menu-item:hover {
+  color: var(--primary-orange);
+  background: #fdfdfd;
+}
+.menu-item.active {
+  color: var(--primary-orange);
+  font-weight: 500;
+  background-color: #fef6f5;
+}
+.menu-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--primary-orange);
+}
+.menu-icon {
+  position: absolute;
+  left: 15px;
+  top: 11px;
+  font-size: 16px;
+}
+
+/* --- 4. MAIN CONTENT AREA --- */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Tab Logic */
+.tab-panel {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+.tab-panel.active {
+  display: block;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card Style */
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+.card-header {
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--primary-orange);
+  padding-left: 10px;
+}
+.desc-text {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+/* Controls & Forms */
+.control-bar {
+  display: flex;
+  gap: 15px;
+  background: #fafafa;
+  padding: 15px;
+  border-radius: 4px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.inp-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: #666;
+}
+.inp-group input,
+.inp-group select {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  outline: none;
+}
+.btn-shopee {
+  background: var(--primary-orange);
+  color: white;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-shopee:hover {
+  background: var(--primary-hover);
+}
+
+/* Table Style (Cho Shipper) */
+.table-custom {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table-custom th {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  color: #888;
+  font-weight: 400;
+}
+.table-custom td {
+  padding: 15px 10px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.stars {
+  color: #ffce3d;
+}
+
+/* Bill Style (Cho Đơn Hàng) */
+.bill-box {
+  border: 1px dashed #ddd;
+  padding: 20px;
+  background: #fffcfb;
+  display: none;
+  margin-top: 15px;
+}
+.bill-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.bill-total {
+  border-top: 1px solid #eee;
+  margin-top: 10px;
+  padding-top: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--primary-orange);
+}

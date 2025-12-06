@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shopee - Toàn Diện</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/3.3.css" />
+  </head>
+  <body>
+    <header class="shopee-header">
+      <div class="header-brand">
+        <i class="fas fa-shopping-bag"></i>
+        <span>Shopee </span>
+      </div>
+      <a
+        href="../index.html"
+        class="header-profile"
+        style="
+          text-decoration: none;
+          color: #555;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+        "
+      >
+        <i class="fas fa-arrow-left" style="font-size: 20px"></i>
+
+        <span style="font-weight: 500">Quay Lại</span>
+      </a>
+    </header>
+
+    <div class="app-container">
+      <nav class="sidebar">
+        <div class="menu-group-label">Quản Lý Kinh Doanh</div>
+        <div
+          class="menu-item active"
+          onclick="switchTab('tab-analytics', this)"
+        >
+          <i class="fas fa-chart-pie menu-icon"></i> Phân Tích Bán Hàng
+        </div>
+        <div class="menu-item" onclick="switchTab('tab-orders', this)">
+          <i class="fas fa-file-invoice-dollar menu-icon"></i> Kiểm Tra Đơn Hàng
+        </div>
+
+        <div class="menu-group-label">Vận Chuyển</div>
+        <div class="menu-item" onclick="switchTab('tab-shipper', this)">
+          <i class="fas fa-motorcycle menu-icon"></i> Đánh Giá Shipper
+        </div>
+      </nav>
+
+      <main class="main-content">
+        <div id="tab-analytics" class="tab-panel active">
+          <div class="card">
+            <div class="card-header">Doanh Thu Theo Danh Mục</div>
+            <p class="desc-text">
+              Mô phỏng Procedure: <code>sp_ThongKeDoanhThuTheoDanhMuc</code>
+            </p>
+
+            <div class="control-bar">
+              <div class="inp-group">
+                <label>Cửa Hàng</label>
+                <select id="storeSelect" style="min-width: 150px">
+                  <option value="">Đang tải...</option>
+                </select>
+              </div>
+
+              <div class="inp-group">
+                <label>Chọn Tháng</label>
+                <select id="monthSelect">
+                  <option value="1">Tháng 1</option>
+                  <option value="2">Tháng 2</option>
+                  <option value="3">Tháng 3</option>
+                  <option value="4">Tháng 4</option>
+                  <option value="5">Tháng 5</option>
+                  <option value="6">Tháng 6</option>
+                  <option value="7">Tháng 7</option>
+                  <option value="8">Tháng 8</option>
+                  <option value="9">Tháng 9</option>
+                  <option value="10">Tháng 10</option>
+                  <option value="11">Tháng 11</option>
+                  <option value="12">Tháng 12</option>
+                </select>
+              </div>
+
+              <div class="inp-group">
+                <label>Năm</label>
+                <input
+                  type="number"
+                  id="yearInput"
+                  value="2025"
+                  style="width: 80px"
+                />
+              </div>
+
+              <button class="btn-shopee" onclick="renderChart()">
+                Xem Báo Cáo
+              </button>
+            </div>
+
+            <div style="height: 400px; position: relative">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-orders" class="tab-panel">
+          <div class="card">
+            <div class="card-header">Tính Tổng Tiền Đơn Hàng</div>
+            <p class="desc-text">
+              Mô phỏng Function: <code>f_TinhTongTienSauGiam</code> (Kiểm tra
+              trạng thái & Khuyến mãi)
+            </p>
+
+            <div class="control-bar">
+              <div class="inp-group" style="flex: 1">
+                <label>Mã Đơn Hàng (Chẵn = Thành công / Lẻ = Thất bại)</label>
+                <input
+                  type="number"
+                  id="orderInput"
+                  placeholder="Ví dụ: 2024"
+                />
+              </div>
+              <button class="btn-shopee" onclick="checkOrder()">
+                Kiểm Tra
+              </button>
+            </div>
+
+            <div id="orderResult" class="bill-box">
+              <div class="bill-row">
+                <span>Trạng Thái:</span>
+                <span id="stt-status" style="font-weight: 500">...</span>
+              </div>
+              <div class="bill-row">
+                <span>Tạm Tính:</span>
+                <span id="stt-sub">0 ₫</span>
+              </div>
+              <div class="bill-row">
+                <span>Mã Giảm Giá:</span>
+                <span id="stt-disc" style="color: var(--primary-orange)"
+                  >0 ₫</span
+                >
+              </div>
+              <div class="bill-row bill-total">
+                <span>Thành Tiền:</span>
+                <span id="stt-final">0 ₫</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-shipper" class="tab-panel">
+          <div class="card">
+            <div class="card-header">Hiệu Quả Đối Tác Vận Chuyển</div>
+            <p class="desc-text">
+              Mô phỏng Function: <code>f_TinhDiemTBShipper</code> (Tính điểm
+              trung bình đánh giá)
+            </p>
+
+            <div
+              style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px"
+            >
+              <div>
+                <table class="table-custom">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Tên Shipper</th>
+                      <th>Điểm TB</th>
+                      <th>Xếp Hạng</th>
+                    </tr>
+                  </thead>
+                  <tbody id="shipperListBody"></tbody>
+                </table>
+              </div>
+
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                "
+              >
+                <h4 style="margin-top: 0; color: #555">Phân Bố Chất Lượng</h4>
+                <canvas id="shipperChart" style="max-height: 250px"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../js/3.3.js"></script>
+  </body>
+</html>

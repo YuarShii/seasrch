@@ -166,3 +166,163 @@ def export_products_csv(
     finally:
         # Luôn đóng kết nối dù có lỗi hay không
         if 'cursor' in locals() and cursor: cursor.close()
+
+@app.get("/analytics/revenue")
+def thong_ke_doanh_thu_frontend(
+    month: int = Query(..., ge=1, le=12, description="Tháng cần thống kê"),
+    year: int = Query(..., ge=2000, le=2100, description="Năm cần thống kê"),
+    store_id: int = Query(1, description="Mã cửa hàng (default = 1)"),
+    session: Session = Depends(get_session)
+):
+    try:
+        raw_conn = session.connection().connection
+        cursor = raw_conn.cursor(dictionary=True)
+
+        # Gọi đúng stored procedure cũ
+        cursor.callproc("sp_ThongKeDoanhThuTheoDanhMuc", [store_id, month, year])
+
+        rows = []
+        for result in cursor.stored_results():
+            rows = result.fetchall() or []
+            break
+
+        cursor.close()
+
+        # Chuyển dữ liệu sang format mà Chart.js cần
+        labels = [item["tenDanhMuc"] for item in rows]
+        values = [float(item["TongDoanhThu"] or 0) / 1_000_000 for item in rows]
+ 
+        # chia 1 triệu để ra đơn vị "triệu VNĐ"
+
+        return {
+            "labels": labels,
+            "values": values,
+        }
+
+    except Exception as e:
+        print(f"[LỖI] /analytics/revenue: {e}")
+        raise HTTPException(status_code=500, detail="Không thể lấy dữ liệu thống kê doanh thu")
+    
+@app.get("/orders/{order_id}")
+def check_order_status(
+    order_id: int,
+    session: Session = Depends(get_session)
+):
+    try:
+        raw_conn = session.connection().connection
+        cursor = raw_conn.cursor(dictionary=True)
+
+        # 1. Gọi function để lấy tổng tiền cuối (logic trạng thái nằm trong function)
+        cursor.execute("SELECT f_TinhTongTienSauGiam(%s) AS final_total", (order_id,))
+        final_row = cursor.fetchone()
+
+        if not final_row:
+            cursor.close()
+            return {
+                "success": False,
+                "status": "Không tìm thấy đơn hàng",
+                "subtotal": 0,
+                "discount": 0,
+                "final": 0
+            }
+
+        final_total = float(final_row["final_total"] or 0)
+
+        # 2. SUCCESS = true nếu function trả > 0 (đúng logic function)
+        success = (final_total > 0)
+
+        # 3. Lấy trạng thái gốc từ bảng
+        cursor.execute("""
+            SELECT trangThaiDonHang 
+            FROM DONHANG 
+            WHERE maDonHang = %s
+        """, (order_id,))
+        order = cursor.fetchone()
+
+        if not order:
+            cursor.close()
+            return {
+                "success": False,
+                "status": "Không tìm thấy đơn hàng",
+                "subtotal": 0,
+                "discount": 0,
+                "final": 0
+            }
+
+        raw_status = order["trangThaiDonHang"]
+
+        # 4. Tính subtotal
+        cursor.execute("""
+            SELECT SUM(soLuongMua * giaLucMua) AS subtotal
+            FROM CHI_TIET_DONHANG
+            WHERE maDonHang = %s
+        """, (order_id,))
+        subtotal_row = cursor.fetchone()
+        subtotal = float(subtotal_row["subtotal"]) if subtotal_row else 0
+
+        # 5. Tính tổng giảm giá
+        cursor.execute("""
+            SELECT COALESCE(SUM(soTienGiamThucTe), 0) AS discount
+            FROM AP_DUNG_KHUYENMAI
+            WHERE maDonHang = %s
+        """, (order_id,))
+        discount_row = cursor.fetchone()
+        discount = float(discount_row["discount"] ) if discount_row else 0
+
+        cursor.close()
+
+        # 6. Hiển thị cho front-end
+        status_text = "Đã Giao Hàng" if success else "Đơn chưa giao"
+
+        return {
+            "success": success,
+            "status": status_text,
+            "subtotal": subtotal,
+            "discount": discount,
+            "final": final_total
+        }
+
+    except Exception as e:
+        print(f"[Lỗi] /orders/{order_id}: {e}")
+        raise HTTPException(status_code=500, detail="Không thể kiểm tra đơn hàng")
+
+@app.get("/shippers")
+def get_all_shippers(session: Session = Depends(get_session)):
+    query = text("""
+        SELECT 
+            s.maShipper AS id,
+            nd.hoTen AS name,
+            f_TinhDiemTBShipper(s.maShipper) AS score
+        FROM SHIPPER s
+        JOIN NGUOIDUNG nd ON s.maShipper = nd.maNguoiDung;
+    """)
+    
+    rows = session.execute(query).fetchall()
+
+    result = []
+    for r in rows:
+        result.append({
+            "id": r.id,
+            "name": r.name,
+            "score": float(r.score or 0)
+        })
+
+    return result
+
+# API mới: Lấy danh sách cửa hàng để đổ vào Dropdown
+@app.get("/stores")
+def get_list_stores(session: Session = Depends(get_session)):
+    try:
+        raw_conn = session.connection().connection
+        cursor = raw_conn.cursor(dictionary=True)
+        
+        # Lấy ID và Tên cửa hàng từ bảng CUAHANG
+        cursor.execute("SELECT maCuaHang, tenCuaHang FROM CUAHANG")
+        rows = cursor.fetchall()
+        cursor.close()
+        
+        # Trả về danh sách dạng JSON
+        return rows 
+    except Exception as e:
+        print(f"Error: {e}")
+        return []
