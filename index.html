@@ -3,133 +3,93 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shop Demo - Shopee Style</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="search.css" />
+    <title>Trang Điều Hướng</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f2f5;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+      }
+
+      .menu-container {
+        display: flex;
+        flex-direction: column; /* Xếp dọc (đổi thành 'row' nếu muốn xếp ngang) */
+        gap: 20px;
+        width: 300px;
+      }
+
+      .nav-btn {
+        display: block;
+        padding: 15px 20px;
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        font-size: 18px;
+        transition: background-color 0.3s, transform 0.2s;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .nav-btn:hover {
+        background-color: #0056b3;
+        transform: translateY(-2px);
+      }
+
+      .nav-btn:active {
+        transform: translateY(0);
+      }
+    </style>
   </head>
   <body>
-    <header>
-      <div class="header-container">
-        <a href="#" class="logo" onclick="resetFilters()"
-          ><i class="fas fa-shopping-bag"></i> Shopee Demo</a
-        >
-        <div class="search-box">
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Tìm sản phẩm, thương hiệu..."
-          />
-          <button class="search-btn" onclick="applySearch()">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
-        <div class="cart-icon"><i class="fas fa-shopping-cart"></i></div>
-      </div>
-    </header>
+    <h1>Các trang chức năng</h1>
 
-    <div class="container">
-      <aside class="sidebar">
-        <div class="filter-group">
-          <div class="filter-title">
-            <i class="fas fa-list"></i> Tất Cả Danh Mục
-          </div>
-          <ul class="category-list" id="categoryList">
-            <li class="category-item active">Đang tải...</li>
-          </ul>
-        </div>
+    <div class="menu-container">
+      <a href="h.html" class="nav-btn" onclick="chuyenTrang(event, this)">
+        Trang 1
+      </a>
 
-        <div class="filter-group">
-          <div class="filter-title">
-            <i class="fas fa-filter"></i> Khoảng Giá
-          </div>
-          <div class="price-inputs">
-            <input
-              type="number"
-              id="priceMin"
-              class="price-input"
-              placeholder="₫ TỪ"
-            />
-            <span>-</span>
-            <input
-              type="number"
-              id="priceMax"
-              class="price-input"
-              placeholder="₫ ĐẾN"
-            />
-          </div>
-          <button class="btn-apply" onclick="applyPrice()">Áp dụng</button>
-        </div>
+      <a
+        href="html/search.html"
+        class="nav-btn"
+        onclick="chuyenTrang(event, this)"
+      >
+        Trang tìm kiếm
+      </a>
 
-        <div class="filter-group">
-          <div class="filter-title"><i class="fas fa-star"></i> Đánh Giá</div>
-          <div class="rating-list">
-            <div class="rating-item" onclick="applyRating(5)">
-              <span class="stars"
-                ><i class="fas fa-star"></i><i class="fas fa-star"></i
-                ><i class="fas fa-star"></i><i class="fas fa-star"></i
-                ><i class="fas fa-star"></i
-              ></span>
-              <span>trở lên</span>
-            </div>
-            <div class="rating-item" onclick="applyRating(4)">
-              <span class="stars"
-                ><i class="fas fa-star"></i><i class="fas fa-star"></i
-                ><i class="fas fa-star"></i><i class="fas fa-star"></i
-                ><i class="far fa-star"></i
-              ></span>
-              <span>trở lên</span>
-            </div>
-            <div class="rating-item" onclick="applyRating(3)">
-              <span class="stars"
-                ><i class="fas fa-star"></i><i class="fas fa-star"></i
-                ><i class="fas fa-star"></i><i class="far fa-star"></i
-                ><i class="far fa-star"></i
-              ></span>
-              <span>trở lên</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main class="main-content">
-        <div class="sort-bar">
-          <span class="sort-label">Sắp xếp theo</span>
-          <button class="sort-btn active" onclick="applySort(0, this)">
-            Mới Nhất
-          </button>
-          <button class="sort-btn" onclick="applySort(3, this)">
-            Bán Chạy
-          </button>
-          <button class="sort-btn" onclick="applySort(1, this)">
-            Giá Thấp
-          </button>
-          <button class="sort-btn" onclick="applySort(2, this)">Giá Cao</button>
-          <button class="btn-export-csv" onclick="downloadCSV()">
-            <i class="fas fa-file-csv"></i> Xuất CSV
-          </button>
-          <div class="page-controller">
-            <span id="pageInfo">1/1</span>
-            <button class="sort-btn" onclick="changePage(-1)">
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="sort-btn" onclick="changePage(1)">
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-
-        <div id="loading">Đang tải sản phẩm...</div>
-
-        <div class="product-grid" id="productGrid"></div>
-
-        <div class="pagination" id="paginationBottom"></div>
-      </main>
+      <a href="trang3.html" class="nav-btn" onclick="chuyenTrang(event, this)">
+        Trang 3
+      </a>
     </div>
 
-    <script src="search.js"></script>
+    <script>
+      function chuyenTrang(event, element) {
+        // Lấy đường dẫn từ thẻ a
+        const targetUrl = element.getAttribute("href");
+
+        // Kiểm tra xem người dùng đã nhập tên file chưa
+        if (targetUrl === "#" || targetUrl === "") {
+          event.preventDefault(); // Chặn chuyển trang
+          alert("⚠️ Bạn chưa nhập tên file trong code HTML!");
+          console.log("Vui lòng sửa thuộc tính href trong file HTML.");
+        } else {
+          // Nếu đã có link, JS có thể log hoặc làm hiệu ứng trước khi chuyển
+          console.log("Đang chuyển hướng đến: " + targetUrl);
+
+          // (Mặc định thẻ <a> tự chuyển, code ở đây chỉ để minh họa logic JS)
+        }
+      }
+    </script>
   </body>
 </html>
